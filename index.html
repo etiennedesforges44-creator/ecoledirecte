@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="écoleDIRECTE">
+<meta name="theme-color" content="#005587">
+<title>écoleDIRECTE</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f4f8; min-height: 100vh; }
+
+  /* LOGIN */
+  #login-screen { min-height: 100vh; background: linear-gradient(135deg, #003d66, #005587, #0077b6); display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .login-box { background: white; border-radius: 12px; padding: 36px 32px; width: 100%; max-width: 360px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+  .login-logo { text-align: center; margin-bottom: 24px; }
+  .login-logo span { background: #005587; color: white; border-radius: 10px; padding: 10px 20px; font-weight: 700; font-size: 22px; letter-spacing: 1px; display: inline-block; }
+  .login-logo p { color: #666; margin-top: 8px; font-size: 13px; }
+  .login-box input { width: 100%; padding: 11px 14px; border: 1.5px solid #ddd; border-radius: 7px; font-size: 14px; margin-bottom: 12px; outline: none; transition: border 0.2s; }
+  .login-box input:focus { border-color: #005587; }
+  .btn-primary { width: 100%; background: #005587; color: white; border: none; border-radius: 7px; padding: 12px; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 10px; }
+  .btn-demo { width: 100%; background: #f0f4f8; color: #005587; border: 2px solid #005587; border-radius: 7px; padding: 11px; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .login-error { background: #ffeaea; color: #c0392b; padding: 9px 12px; border-radius: 6px; font-size: 12px; margin-bottom: 14px; }
+  .login-note { margin-top: 14px; background: #fffbe6; border: 1px solid #f0c040; border-radius: 6px; padding: 10px 12px; font-size: 11px; color: #7a5c00; }
+
+  /* APP */
+  #app { display: none; min-height: 100vh; }
+  .header { background: #005587; color: white; position: sticky; top: 0; z-index: 100; }
+  .header-top { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px 0; max-width: 700px; margin: 0 auto; }
+  .header-logo { font-weight: 700; font-size: 18px; letter-spacing: 0.5px; }
+  .header-user { text-align: right; }
+  .header-user .name { font-weight: 600; font-size: 14px; }
+  .header-user .sub { font-size: 12px; opacity: 0.8; }
+  .tabs { display: flex; overflow-x: auto; max-width: 700px; margin: 0 auto; scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab-btn { background: none; border: none; color: white; padding: 12px 14px; cursor: pointer; font-size: 13px; font-weight: 400; border-bottom: 3px solid transparent; white-space: nowrap; opacity: 0.75; transition: all 0.2s; }
+  .tab-btn.active { font-weight: 700; border-bottom: 3px solid white; opacity: 1; }
+
+  .content { max-width: 700px; margin: 0 auto; padding: 20px 16px; }
+
+  /* CARDS */
+  .card { background: white; border-radius: 10px; padding: 14px 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 10px; }
+  .card-left-border { border-left: 4px solid #005587; }
+
+  /* NOTES */
+  .moyenne-card { background: linear-gradient(135deg, #005587, #0077b6); color: white; border-radius: 12px; padding: 20px 24px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+  .moyenne-card .big { font-size: 36px; font-weight: 700; }
+  .moyenne-card .sub { font-size: 13px; opacity: 0.8; }
+  .note-row { display: flex; align-items: center; gap: 14px; }
+  .note-info { flex: 1; }
+  .note-info .matiere { font-weight: 600; font-size: 14px; color: #1a2a3a; }
+  .note-info .meta { font-size: 12px; color: #888; }
+  .note-val { text-align: right; }
+  .note-val .val { font-size: 20px; font-weight: 700; }
+  .note-val .moy { font-size: 11px; color: #aaa; }
+  .green { color: #27ae60; }
+  .red { color: #e74c3c; }
+
+  /* FILTER PILLS */
+  .pills { display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; }
+  .pills::-webkit-scrollbar { display: none; }
+  .pill { padding: 8px 14px; border-radius: 20px; border: none; cursor: pointer; font-size: 13px; font-weight: 600; white-space: nowrap; transition: all 0.2s; background: #f0f4f8; color: #444; }
+  .pill.active { background: #005587; color: white; }
+
+  /* EMPLOI */
+  .cours-row { display: flex; gap: 14px; }
+  .cours-heure { min-width: 70px; text-align: center; }
+  .cours-heure .h { font-size: 14px; font-weight: 700; color: #005587; }
+  .cours-heure .fin { font-size: 11px; color: #aaa; }
+  .cours-info .mat { font-weight: 600; font-size: 14px; }
+  .cours-info .prof { font-size: 12px; color: #888; }
+  .cours-info .salle { font-size: 12px; color: #aaa; margin-top: 2px; }
+
+  /* CAHIER */
+  .devoir-header { display: flex; justify-content: space-between; margin-bottom: 6px; align-items: flex-start; }
+  .devoir-mat { font-weight: 600; font-size: 14px; }
+  .badge { font-size: 10px; padding: 3px 8px; border-radius: 10px; font-weight: 600; }
+  .badge-devoir { background: #fff0e0; color: #e67e22; }
+  .badge-cours { background: #e8f4ff; color: #005587; }
+  .devoir-titre { font-weight: 600; font-size: 13px; color: #1a2a3a; margin-bottom: 4px; }
+  .devoir-contenu { font-size: 12px; color: #666; line-height: 1.5; }
+  .devoir-date { font-size: 11px; color: #aaa; margin-top: 8px; }
+
+  /* MESSAGERIE */
+  .msg-row { cursor: pointer; transition: box-shadow 0.2s; }
+  .msg-row:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+  .msg-header { display: flex; justify-content: space-between; margin-bottom: 4px; }
+  .msg-exp { font-size: 14px; }
+  .msg-exp.unread { font-weight: 700; }
+  .msg-date { font-size: 11px; color: #aaa; }
+  .msg-sujet { font-size: 13px; color: #888; }
+  .msg-sujet.unread { color: #1a2a3a; font-weight: 600; }
+  .unread-badge { font-size: 10px; background: #005587; color: white; padding: 2px 7px; border-radius: 8px; margin-top: 6px; display: inline-block; }
+  .back-btn { background: none; border: none; color: #005587; font-weight: 600; font-size: 14px; cursor: pointer; margin-bottom: 12px; padding: 0; }
+  .msg-detail-from { font-size: 12px; color: #888; margin-bottom: 16px; }
+  .msg-detail-body { font-size: 14px; color: #333; line-height: 1.7; }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">
+      <span>écoleDIRECTE</span>
+      <p>Espace élève</p>
+    </div>
+    <input type="text" id="login-id" placeholder="Identifiant" />
+    <input type="password" id="login-pwd" placeholder="Mot de passe" />
+    <div id="login-error" class="login-error" style="display:none"></div>
+    <button class="btn-primary" onclick="doLogin()">Se connecter</button>
+    <button class="btn-demo" onclick="doDemo()">🎭 Mode démo</button>
+    <div class="login-note">
+      ⚠️ Pour utiliser ton vrai compte, installe l'extension <b>CORS Unblock</b> sur Chrome/Firefox puis réessaie.
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="header">
+    <div class="header-top">
+      <div class="header-logo">écoleDIRECTE</div>
+      <div class="header-user">
+        <div class="name" id="user-name"></div>
+        <div class="sub" id="user-class"></div>
+      </div>
+    </div>
+    <div class="tabs">
+      <button class="tab-btn active" onclick="showTab('notes', this)">📊 Notes</button>
+      <button class="tab-btn" onclick="showTab('emploi', this)">📅 Emploi du temps</button>
+      <button class="tab-btn" onclick="showTab('cahier', this)">📖 Cahier de texte</button>
+      <button class="tab-btn" onclick="showTab('messages', this)">✉️ Messages</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- NOTES -->
+    <div id="tab-notes" class="tab-content active">
+      <div class="moyenne-card">
+        <div><div class="sub">Moyenne générale</div><div class="big" id="moy-gen"></div></div>
+        <div style="text-align:right"><div class="sub">Trimestre 2</div><div style="font-size:20px;font-weight:600" id="nb-notes"></div></div>
+      </div>
+      <div id="notes-list"></div>
+    </div>
+
+    <!-- EMPLOI -->
+    <div id="tab-emploi" class="tab-content">
+      <div class="pills" id="jours-pills"></div>
+      <div id="emploi-list"></div>
+    </div>
+
+    <!-- CAHIER -->
+    <div id="tab-cahier" class="tab-content">
+      <div class="pills">
+        <button class="pill active" onclick="filterCahier('tous', this)">Tout</button>
+        <button class="pill" onclick="filterCahier('devoir', this)">📝 Devoirs</button>
+        <button class="pill" onclick="filterCahier('cours', this)">📚 Cours</button>
+      </div>
+      <div id="cahier-list"></div>
+    </div>
+
+    <!-- MESSAGES -->
+    <div id="tab-messages" class="tab-content">
+      <div id="msg-list"></div>
+      <div id="msg-detail" style="display:none">
+        <button class="back-btn" onclick="backToMessages()">← Retour</button>
+        <div class="card">
+          <div style="font-weight:700;font-size:16px;margin-bottom:4px" id="msg-detail-sujet"></div>
+          <div class="msg-detail-from" id="msg-detail-from"></div>
+          <div class="msg-detail-body" id="msg-detail-body"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const DEMO = {
+  student: { prenom: "Etienne", nom: "Dupont", classe: "1ère G2" },
+  notes: [
+    { matiere: "Mathématiques", note: 14.5, coef: 3, date: "2026-02-20", prof: "M. Bernard", moyenne: 12.3 },
+    { matiere: "Français", note: 16, coef: 2, date: "2026-02-18", prof: "Mme Lefebvre", moyenne: 13.1 },
+    { matiere: "Histoire-Géo", note: 13, coef: 2, date: "2026-02-15", prof: "M. Morin", moyenne: 11.8 },
+    { matiere: "Physique-Chimie", note: 11.5, coef: 2.5, date: "2026-02-12", prof: "Mme Petit", moyenne: 10.9 },
+    { matiere: "SVT", note: 17, coef: 2, date: "2026-02-10", prof: "M. Garnier", moyenne: 13.5 },
+    { matiere: "Anglais", note: 18, coef: 2, date: "2026-02-08", prof: "Mme Rousseau", moyenne: 14.2 },
+    { matiere: "Espagnol", note: 15.5, coef: 2, date: "2026-02-05", prof: "M. Torres", moyenne: 12.7 },
+    { matiere: "SES", note: 12, coef: 2, date: "2026-02-01", prof: "Mme Dubois", moyenne: 11.4 },
+  ],
+  emploi: [
+    { jour: "Lundi", heures: [
+      { heure: "8h00", fin: "9h00", matiere: "Mathématiques", salle: "B204", prof: "M. Bernard" },
+      { heure: "9h00", fin: "10h00", matiere: "Anglais", salle: "A102", prof: "Mme Rousseau" },
+      { heure: "10h15", fin: "11h15", matiere: "Français", salle: "A201", prof: "Mme Lefebvre" },
+      { heure: "13h00", fin: "14h00", matiere: "SVT", salle: "C301", prof: "M. Garnier" },
+      { heure: "14h00", fin: "15h00", matiere: "Physique-Chimie", salle: "C302", prof: "Mme Petit" },
+    ]},
+    { jour: "Mardi", heures: [
+      { heure: "8h00", fin: "9h00", matiere: "Histoire-Géo", salle: "A105", prof: "M. Morin" },
+      { heure: "9h00", fin: "10h00", matiere: "SES", salle: "B101", prof: "Mme Dubois" },
+      { heure: "10h15", fin: "12h15", matiere: "Mathématiques", salle: "B204", prof: "M. Bernard" },
+    ]},
+    { jour: "Mercredi", heures: [
+      { heure: "8h00", fin: "9h00", matiere: "Espagnol", salle: "A103", prof: "M. Torres" },
+      { heure: "9h00", fin: "10h00", matiere: "Français", salle: "A201", prof: "Mme Lefebvre" },
+      { heure: "10h15", fin: "11h15", matiere: "Anglais", salle: "A102", prof: "Mme Rousseau" },
+    ]},
+    { jour: "Jeudi", heures: [
+      { heure: "8h00", fin: "9h00", matiere: "Physique-Chimie", salle: "C302", prof: "Mme Petit" },
+      { heure: "9h00", fin: "10h00", matiere: "SVT", salle: "C301", prof: "M. Garnier" },
+      { heure: "10h15", fin: "11h15", matiere: "SES", salle: "B101", prof: "Mme Dubois" },
+      { heure: "13h00", fin: "15h00", matiere: "Histoire-Géo", salle: "A105", prof: "M. Morin" },
+    ]},
+    { jour: "Vendredi", heures: [
+      { heure: "8h00", fin: "10h00", matiere: "Français", salle: "A201", prof: "Mme Lefebvre" },
+      { heure: "10h15", fin: "11h15", matiere: "Mathématiques", salle: "B204", prof: "M. Bernard" },
+      { heure: "13h00", fin: "14h00", matiere: "Espagnol", salle: "A103", prof: "M. Torres" },
+    ]},
+  ],
+  cahier: [
+    { matiere: "Mathématiques", date: "2026-03-10", titre: "Limites et continuité", contenu: "Exercices 12 à 18 page 142. Revoir le cours sur les suites.", type: "devoir" },
+    { matiere: "Français", date: "2026-03-09", titre: "Dissertation — Romantisme", contenu: "Préparer un plan détaillé sur le thème du mal du siècle dans la littérature romantique.", type: "devoir" },
+    { matiere: "Histoire-Géo", date: "2026-03-08", titre: "Révisions — Mondialisation", contenu: "Revoir les chapitres 3 et 4. Carte mentale à faire sur les flux mondiaux.", type: "cours" },
+    { matiere: "Anglais", date: "2026-03-07", titre: "Oral — Science & Technology", contenu: "Préparer une présentation de 3 minutes sur un sujet de votre choix lié à la technologie.", type: "devoir" },
+    { matiere: "Physique-Chimie", date: "2026-03-06", titre: "Compte-rendu TP Ondes", contenu: "Rédiger le compte-rendu du TP. À rendre mardi.", type: "devoir" },
+  ],
+  messages: [
+    { expediteur: "M. Bernard", date: "2026-03-07", sujet: "Devoir surveillé semaine 11", lu: false, contenu: "Bonjour, je vous rappelle que le DS de mathématiques aura lieu vendredi 13 mars. Il portera sur les chapitres 5 à 8. Bonne révision !" },
+    { expediteur: "Administration", date: "2026-03-05", sujet: "Réunion parents-professeurs", lu: true, contenu: "La réunion parents-professeurs du trimestre 2 aura lieu le mercredi 18 mars de 17h à 20h." },
+    { expediteur: "Mme Lefebvre", date: "2026-03-04", sujet: "Note de la dissertation", lu: true, contenu: "Votre dissertation sur Rimbaud a été corrigée. Vous pouvez la récupérer en classe lundi." },
+    { expediteur: "M. Garnier", date: "2026-02-28", sujet: "Sortie pédagogique SVT", lu: true, contenu: "La sortie au musée d'histoire naturelle est confirmée pour le 20 mars. Merci de rendre le formulaire d'autorisation signé." },
+  ]
+};
+
+const COLORS = {
+  "Mathématiques": "#e74c3c", "Français": "#9b59b6", "Histoire-Géo": "#e67e22",
+  "Physique-Chimie": "#3498db", "SVT": "#27ae60", "Anglais": "#1abc9c",
+  "Espagnol": "#f39c12", "SES": "#e91e63"
+};
+function color(m) { return COLORS[m] || "#005587"; }
+
+function fmtDate(d) { return new Date(d).toLocaleDateString("fr-FR"); }
+
+// LOGIN
+async function doLogin() {
+  const id = document.getElementById("login-id").value;
+  const pwd = document.getElementById("login-pwd").value;
+  if (!id || !pwd) { showError("Veuillez remplir tous les champs."); return; }
+  try {
+    const res = await fetch("https://api.ecoledirecte.com/v3/login.awp?v=4", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: `data=${encodeURIComponent(JSON.stringify({ identifiant: id, motdepasse: pwd, isReLogin: false, uuid: "", fa: [] }))}`
+    });
+    const json = await res.json();
+    if (json.code === 200) {
+      const acc = json.data.accounts[0];
+      launchApp(acc.prenom, acc.nom, acc.classe?.libelle || "", false);
+    } else {
+      showError("Identifiant ou mot de passe incorrect.");
+    }
+  } catch {
+    showError("Connexion impossible. Active l'extension CORS Unblock ou utilise le mode démo.");
+  }
+}
+
+function doDemo() { launchApp(DEMO.student.prenom, DEMO.student.nom, DEMO.student.classe, true); }
+
+function showError(msg) {
+  const el = document.getElementById("login-error");
+  el.textContent = msg; el.style.display = "block";
+}
+
+function launchApp(prenom, nom, classe, isDemo) {
+  document.getElementById("login-screen").style.display = "none";
+  document.getElementById("app").style.display = "block";
+  document.getElementById("user-name").textContent = `${prenom} ${nom}`;
+  document.getElementById("user-class").textContent = classe + (isDemo ? " • Mode démo" : "");
+  renderNotes(DEMO.notes);
+  renderEmploi(DEMO.emploi);
+  renderCahier(DEMO.cahier, "tous");
+  renderMessages(DEMO.messages);
+}
+
+// TABS
+function showTab(name, btn) {
+  document.querySelectorAll(".tab-content").forEach(el => el.classList.remove("active"));
+  document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
+  document.getElementById("tab-" + name).classList.add("active");
+  btn.classList.add("active");
+}
+
+// NOTES
+function renderNotes(notes) {
+  const totalCoef = notes.reduce((s,n) => s+n.coef, 0);
+  const moy = (notes.reduce((s,n) => s+n.note*n.coef, 0) / totalCoef).toFixed(2);
+  document.getElementById("moy-gen").innerHTML = `${moy}<span style="font-size:18px">/20</span>`;
+  document.getElementById("nb-notes").textContent = `${notes.length} notes`;
+  document.getElementById("notes-list").innerHTML = notes.map(n => `
+    <div class="card card-left-border" style="border-left-color:${color(n.matiere)}">
+      <div class="note-row">
+        <div class="note-info">
+          <div class="matiere">${n.matiere}</div>
+          <div class="meta">${n.prof} — ${fmtDate(n.date)}</div>
+        </div>
+        <div class="note-val">
+          <div class="val ${n.note>=10?'green':'red'}">${n.note}<span style="font-size:13px;color:#999">/20</span></div>
+          <div class="moy">Moy. classe : ${n.moyenne}</div>
+        </div>
+      </div>
+    </div>`).join("");
+}
+
+// EMPLOI
+let currentJour = "";
+function renderEmploi(emploi) {
+  const jours = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi"];
+  const todayMap = {0:"Dimanche",1:"Lundi",2:"Mardi",3:"Mercredi",4:"Jeudi",5:"Vendredi",6:"Samedi"};
+  const today = todayMap[new Date().getDay()];
+  currentJour = jours.includes(today) ? today : "Lundi";
+
+  document.getElementById("jours-pills").innerHTML = jours.map(j => `
+    <button class="pill${j===currentJour?' active':''}" onclick="selectJour('${j}', this)">${j}</button>`).join("");
+  renderJour(emploi, currentJour);
+}
+
+function selectJour(jour, btn) {
+  document.querySelectorAll("#jours-pills .pill").forEach(p => p.classList.remove("active"));
+  btn.classList.add("active");
+  renderJour(DEMO.emploi, jour);
+}
+
+function renderJour(emploi, jour) {
+  const data = emploi.find(j => j.jour === jour);
+  document.getElementById("emploi-list").innerHTML = data ? data.heures.map(h => `
+    <div class="card card-left-border" style="border-left-color:${color(h.matiere)}">
+      <div class="cours-row">
+        <div class="cours-heure">
+          <div class="h">${h.heure}</div>
+          <div class="fin">→ ${h.fin}</div>
+        </div>
+        <div class="cours-info">
+          <div class="mat">${h.matiere}</div>
+          <div class="prof">${h.prof}</div>
+          <div class="salle">🏫 Salle ${h.salle}</div>
+        </div>
+      </div>
+    </div>`).join("") : "<p style='color:#aaa;text-align:center;padding:30px'>Pas de cours ce jour.</p>";
+}
+
+// CAHIER
+function filterCahier(type, btn) {
+  document.querySelectorAll(".pills .pill").forEach(p => p.classList.remove("active"));
+  btn.classList.add("active");
+  renderCahier(DEMO.cahier, type);
+}
+
+function renderCahier(cahier, filter) {
+  const filtered = filter === "tous" ? cahier : cahier.filter(d => d.type === filter);
+  document.getElementById("cahier-list").innerHTML = filtered.map(d => `
+    <div class="card card-left-border" style="border-left-color:${color(d.matiere)}">
+      <div class="devoir-header">
+        <span class="devoir-mat">${d.matiere}</span>
+        <span class="badge ${d.type==='devoir'?'badge-devoir':'badge-cours'}">${d.type==='devoir'?'📝 Devoir':'📚 Cours'}</span>
+      </div>
+      <div class="devoir-titre">${d.titre}</div>
+      <div class="devoir-contenu">${d.contenu}</div>
+      <div class="devoir-date">Pour le ${fmtDate(d.date)}</div>
+    </div>`).join("");
+}
+
+// MESSAGES
+function renderMessages(messages) {
+  document.getElementById("msg-list").innerHTML = messages.map((m, i) => `
+    <div class="card card-left-border msg-row" style="border-left-color:${m.lu?'#ddd':'#005587'};opacity:${m.lu?0.85:1}" onclick="openMsg(${i})">
+      <div class="msg-header">
+        <span class="msg-exp${m.lu?'':' unread'}">${m.expediteur}</span>
+        <span class="msg-date">${fmtDate(m.date)}</span>
+      </div>
+      <div class="msg-sujet${m.lu?'':' unread'}">${m.sujet}</div>
+      ${!m.lu ? '<span class="unread-badge">Non lu</span>' : ''}
+    </div>`).join("");
+}
+
+function openMsg(i) {
+  const m = DEMO.messages[i];
+  document.getElementById("msg-list").style.display = "none";
+  document.getElementById("msg-detail").style.display = "block";
+  document.getElementById("msg-detail-sujet").textContent = m.sujet;
+  document.getElementById("msg-detail-from").textContent = `De : ${m.expediteur} — ${fmtDate(m.date)}`;
+  document.getElementById("msg-detail-body").textContent = m.contenu;
+}
+
+function backToMessages() {
+  document.getElementById("msg-list").style.display = "block";
+  document.getElementById("msg-detail").style.display = "none";
+}
+
+// ENTER key on login
+document.addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
+</script>
+</body>
+</html>
